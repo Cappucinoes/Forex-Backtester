@@ -125,6 +125,7 @@ print(opt_pair[opt_pair.Result_string == "LOOSE"].Result.mean())
 print(opt_pair.groupby("Result_string").Pips.mean())
 print(opt_pair.groupby("Result_string").Pips.sum())
 print(trading_history.groupby("Result_string").Pips.sum())
+#results saved with graphs
 
 
 

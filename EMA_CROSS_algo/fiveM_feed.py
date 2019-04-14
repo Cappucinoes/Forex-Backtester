@@ -9,7 +9,7 @@ import json
 
 accountID = forex_bakalarka.accountID
 access_token = forex_bakalarka.access_token
-second_algo_historia = []           # file do ktoreho sa ulozia objednavky aby som nemal zdvojene
+second_algo_historia = []           # file do ktoreho sa ulozia objednavky aby nemal zdvojene
 
 def spusti_range_signal(): #if this function is called, request for 5M data df is sent
     forex_bakalarka.fire_up(accountID, access_token)

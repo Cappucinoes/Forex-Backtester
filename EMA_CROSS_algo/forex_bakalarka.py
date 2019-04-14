@@ -108,4 +108,4 @@ def fire_up(acc_id, access_t):
     writer.save()
     print("Data ulozene!")
 
-#saved on 12th of april, paths for mac
+#saved on 12th of april, paths for MAC
