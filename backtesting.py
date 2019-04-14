@@ -598,7 +598,7 @@ vysledky_df.to_excel("/Users/Cappucinoes/PycharmProjects/Forex-Backtester/vysled
 print(vysledky_df["vysledok_v_pip"].apply(lambda x: abs(x)).mean)
 #cesty prepisane
 
-
+#edit
 
 
 
