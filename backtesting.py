@@ -12,7 +12,6 @@ access_token = "your_access_token" # define api_token
 api = API(access_token) # initialize API
 menove_pary = ["EUR_USD", "NZD_USD","USD_CHF","GBP_USD","AUD_USD","USD_CAD","GBP_CHF"] #list of currencies we wish to use
 
-
 params = {"count":5000, # sets parameters for query
                 "granularity": "M1"}
 def fire_up(acc_id, access_t):
@@ -62,14 +61,10 @@ def fire_up(acc_id, access_t):
                 pass
 
         df_hotovy["EMA_20"] = talib.EMA(df_hotovy["c"], timeperiod=10)  # upraveny period z 20
-
         pd.set_option("display.float_format",
                       lambda x: "%.5f" % x)  # sets pandas number format for rounding to 0.000000
-
         df_hotovy["swing_col"] = swing_col
-
         # pouzijeme apply a series
-
         # RANGE IDENTIFIER
         # pocitanie vzdialenosti medzi swingami
         cislo_sviecky = 0
@@ -126,11 +121,8 @@ def fire_up(acc_id, access_t):
         H_porovnanie_odnajstarsej.set_index("indexy_pre_swing_high", drop=True,
                                             inplace=True)  # porovnanie H swingov v rovnakom formate ako df_hotovy
         # H_porovnanie_odnajstarsej hotovy dataframe pre concat s df_hotovy
-
         df_hotovy = pd.concat([df_hotovy, H_porovnanie_odnajstarsej], axis=1)
-
         # L a L rozdiely
-
         cena_low_swingu = []
         rozdiel_1_predosla_l = []
         rozdiel_2_predosla_l = []
@@ -180,7 +172,6 @@ def fire_up(acc_id, access_t):
         list_rozdielov = [round(x, 5) for x in list_rozdielov]
 
         import openpyxl
-
         # AVERAGE SIZE OF LAST 10 CANDLES
         avg_last_10 = []
         ceny = []
@@ -210,13 +201,7 @@ def fire_up(acc_id, access_t):
 
         df_hotovy["FLAT_INDIC"] = ema_series
 
-
-
         # RANGE CEILING
-
-        # RANGE CEILING FUNGUJUCI MODUL, CAKA NA IMPLEMENTACIU
-
-
         test_df = df_hotovy[["cena_high_swingu", "rozdiel_1_predosla_h", "rozdiel_2_predosla_h"]]
         test_df = test_df.iloc[-1::-1]
 
@@ -249,10 +234,8 @@ def fire_up(acc_id, access_t):
 
         test_df["roof_price"] = roof_price_series
 
-
         def roof_price(index):
             test_df.roof_price[index] = test_df.cena_high_swingu[index]
-
 
         roof_price([i for i in roof_price_series.index])
         test_df = test_df["roof_price"]
@@ -291,19 +274,15 @@ def fire_up(acc_id, access_t):
 
         test_df["floor_price"] = floor_price_series
 
-
         def floor_price(index):
             test_df.floor_price[index] = test_df.cena_low_swingu[index]
-
 
         floor_price([i for i in floor_price_series.index])
         test_df = test_df["floor_price"]
         df_hotovy["floor_price"] = test_df
 
         # PREDPOKLAD PRE VOID SVIECKU
-
         test_df = df_hotovy
-
         indexy = []
         hodnoty = []
 
@@ -315,9 +294,7 @@ def fire_up(acc_id, access_t):
         swing_ser = pd.Series(hodnoty, index=indexy)
 
         indexy = indexy[-1::-1]
-
         swing_ser = swing_ser[-1::-1]  # otocit na lepsiu manipulaciu v loope (od najnovsieho po najstarsie)
-
         spodna_hranica = []
         index_pre_spodnu_hranicu = []
 
@@ -360,15 +337,11 @@ def fire_up(acc_id, access_t):
         horna_hranica_ser = pd.Series(horna_hranica, index=index_pre_hornu_hranicu)
         df_hotovy["horna_hranica"] = horna_hranica_ser
 
-
-
         swing_col = df_hotovy["swing_col"][pd.isnull(df_hotovy["swing_col"]) == False][-1::-1]
 
         #def oddelovac(sw_h_or_l):
         #    for index,value in swing_col.iteritems:
         #        if i == sw_h_or_l
-
-        print(type(df_hotovy.roof_price[0]), type(df_hotovy.c[0]))
 
         def prva_ema_rozdiel(h,l):
             rozdiel = h - l
@@ -383,15 +356,12 @@ def fire_up(acc_id, access_t):
 
         df_hotovy.drop(["spodna_hranica",'horna_hranica'], axis=1, inplace = True)
 
-
-
         def ema_rozdiel(krok, indx_h, indx_l):
             if indx_h[krok - 1] < indx_l[krok - 1]:
                 rozdiel = indx_h[krok - 1] - indx_l[krok]
                 return abs(rozdiel)
             else:
                 rozdiel = indx_l
-
 
         def closest_opposite_swing(ind, checked_candles):
             try:
@@ -406,7 +376,6 @@ def fire_up(acc_id, access_t):
             except IndexError:
                 pass
 
-
         def ema_flatter(ema_range):
             if pd.isnull(ema_range) == False and ema_range > 2:  # tu sa upravuje kolko sviecom musi mat range minimalne
                 for pokus in range(ema_range + 1):
@@ -415,7 +384,6 @@ def fire_up(acc_id, access_t):
                         validate_index = swing_col.index[ind]
                         return [validate, validate_index]
                         break
-
 
         def signal(valid_range_index, range_size, void_magnitude):  # dorobit void indic
             try:
@@ -431,7 +399,6 @@ def fire_up(acc_id, access_t):
                                 return [valid_range_index, signal]
                             break
 
-
                     elif float(df_hotovy.c[valid_range_index + i]) < df_hotovy.floor_price[valid_range_index]:
                         for potencial_void in range(5):
                             if df_hotovy.candle_size_pip[valid_range_index + i + potencial_void] > (
@@ -444,7 +411,6 @@ def fire_up(acc_id, access_t):
 
             except (IndexError, KeyError):
                 pass
-
 
         signal_value = []
         signal_index = []
@@ -490,7 +456,6 @@ def cistic(data_frame,sheet_name):
 
 import xlrd
 
-
 def vytvor_signal_excel_file(): # v tejto funkcii musi byt chyba
     xlsx = xlrd.open_workbook("/Users/Cappucinoes/PycharmProjects/Forex-Backtester/df_backtest_feed.xlsx")
 
@@ -517,7 +482,6 @@ def vytvor_signal_excel_file(): # v tejto funkcii musi byt chyba
     print("Dataframe saved! Ready to be used with signals.xlsx")
 
 import operator
-
 
 def vyhodnotenie_signalu(data_df, signal_type,signal_price,signal_sl,signal_tp,signal_index, signal_identified_index):
     data_df_iter = data_df.iterrows()
@@ -584,10 +548,9 @@ def itteruj():
     writer_vysledky.save()
     vysledky_sorted.to_excel("/Users/Cappucinoes/PycharmProjects/Forex-Backtester/vysledky_sorted.xlsx")
 
-fire_up(accountID,access_token)
-vytvor_signal_excel_file()
-itteruj()
-
+fire_up(accountID,access_token) # fetches data into file
+vytvor_signal_excel_file() # creates supp files
+itteruj() # does condition checking
 
 def plus_minus(riadok):
     for i in riadok.split():
@@ -605,7 +568,6 @@ def vysledok_v_pip(riadok):
     else:
         return -vysledok_v_pip
 
-
 def spracuj_vysledky():
     vysledky_df = pd.read_excel("/Users/Cappucinoes/PycharmProjects/Forex-Backtester/vysledky_sorted.xlsx")
     vysledky_df.columns = ["data"]
@@ -618,9 +580,7 @@ def spracuj_vysledky():
     vysledky_df["vysledok_v_pip"] = vysledky_df.apply(vysledok_v_pip, axis= 1)
     vysledky_df["limit_order_time"] = vysledky_df.data.apply(lambda x: x.split()[0])
 
-
     return vysledky_df
-
 
 import numpy as np
 desired_width = 320
