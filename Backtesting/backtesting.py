@@ -7,8 +7,8 @@ import talib
 import oandapyV20.endpoints.pricing as pricing
 import configparser
 
-accountID = "your_account_id" # define accID, stanalone variables so that we dont need to create them every time
-access_token = "your_access_token" # define api_token
+accountID = "101-004-8194699-002" # define accID, stanalone variables so that we dont need to create them every time
+access_token = "0a504d77a452765e89fef14a396edbb5-926aa0288f617853dc8468faa10fe46d"  # define api_token
 api = API(access_token) # initialize API
 menove_pary = ["EUR_USD", "NZD_USD","USD_CHF","GBP_USD","AUD_USD","USD_CAD","GBP_CHF"] #list of currencies we wish to use
 
@@ -19,7 +19,7 @@ def fire_up(acc_id, access_t):
     access_token = access_t # define api_token
 
 
-    writer = pd.ExcelWriter("/Users/Cappucinoes/PycharmProjects/Forex-Backtester/df_backtest_feed.xlsx")
+    writer = pd.ExcelWriter(r"C:\Users\Cappucinoe`s Beast\Desktop\Python-Algo\Backtesting\df_backtest_feed.xlsx")
 
     for par in menove_pary: # bellow is a list of operations every sheet does
 
@@ -457,13 +457,13 @@ def cistic(data_frame,sheet_name):
 import xlrd
 
 def vytvor_signal_excel_file(): # v tejto funkcii musi byt chyba
-    xlsx = xlrd.open_workbook("/Users/Cappucinoes/PycharmProjects/Forex-Backtester/df_backtest_feed.xlsx")
+    xlsx = xlrd.open_workbook(r"C:\Users\Cappucinoe`s Beast\Desktop\Python-Algo\Backtesting\df_backtest_feed.xlsx")
 
-    writer_signals = pd.ExcelWriter("/Users/Cappucinoes/PycharmProjects/Forex-Backtester/signals.xlsx")
+    writer_signals = pd.ExcelWriter(r"C:\Users\Cappucinoe`s Beast\Desktop\Python-Algo\Backtesting\signals.xlsx")
     try:
         for sheet_name in xlsx.sheet_names():  # pre kazdy par v data feed exceli
             print("Vyhladavam ordery pre {}".format(sheet_name))
-            signals = pd.read_excel("/Users/Cappucinoes/PycharmProjects/Forex-Backtester/df_backtest_feed.xlsx", sheet_name=sheet_name)["signal"]  # najde stlpec signal pre aktualny par
+            signals = pd.read_excel(r"C:\Users\Cappucinoe`s Beast\Desktop\Python-Algo\Backtesting\df_backtest_feed.xlsx", sheet_name=sheet_name)["signal"]  # najde stlpec signal pre aktualny par
             signals = signals[pd.isnull(signals) == False]
             columns = ["typ", "PRICE", "STOP_LOSS", "TAKE_PROFIT", "IDENTIFICATOR_CANDLE"]
             data = [i.split(" ") for i in signals]
@@ -483,7 +483,7 @@ def vytvor_signal_excel_file(): # v tejto funkcii musi byt chyba
 
 import operator
 
-def vyhodnotenie_signalu(data_df, signal_type,signal_price,signal_sl,signal_tp,signal_index, signal_identified_index):
+def vyhodnotenie_signalu(data_df, signal_type,signal_price,signal_sl,signal_tp,signal_index, signal_identified_index,sheet_name):
     data_df_iter = data_df.iterrows()
     for row in data_df_iter:
         data_df_row_index = row[0]
@@ -499,8 +499,8 @@ def vyhodnotenie_signalu(data_df, signal_type,signal_price,signal_sl,signal_tp,s
                             return True
 
             elif signal_type == "SELL": #urci kontrolu TP a SL pre sell order
-                check_tp = operator.le(data_df["l"][data_df_row_index], signal_tp)
-                check_sl = operator.ge(data_df["h"][data_df_row_index], signal_sl)
+                check_tp = operator.le(data_df["l"][data_df_row_index], signal_tp)#spread je +0.00015
+                check_sl = operator.ge(data_df["h"][data_df_row_index], signal_sl)#spread je +0.00015
                 def check_open():
                     for index_kontrola_open in range(signal_identified_index+1, data_df_row_index):
                         if data_df["h"][index_kontrola_open] >= signal_price:
@@ -509,13 +509,13 @@ def vyhodnotenie_signalu(data_df, signal_type,signal_price,signal_sl,signal_tp,s
 
             if check_tp and check_open(): #ak cena dosiahla TP (resp. ak by bola pozicia uzavreta) a ak poziciu otvorilo
 
-                vysledok = "{} ZACIATOK_POZICIE {} {} {} TP_HIT {} {}".format(data_df["time"][signal_index],signal_type, signal_index,signal_price, data_df_row_index, signal_tp)
+                vysledok = "{} {} {} {} {} TP_HIT {} {} {}".format(data_df["time"][signal_index],sheet_name,signal_type, signal_index,signal_price, data_df_row_index, signal_tp, data_df["time"][data_df_row_index])
                 print("Cena otvorenia {} {} TP_HIT {}".format(signal_type,signal_price, signal_tp))
                 return vysledok
                 break
 
             elif check_sl and check_open(): #ak cena dosiahla SL (resp. ak by bola pozicia uzavreta) a ak poziciu otvorilo
-                vysledok = "{} ZACIATOK_POZICIE {} {} {} SL_HIT {} {}".format(data_df["time"][signal_index],signal_type, signal_index, signal_price, data_df_row_index,signal_sl)
+                vysledok = "{} {} {} {} {} SL_HIT {} {} {}".format(data_df["time"][signal_index],sheet_name,signal_type, signal_index, signal_price, data_df_row_index,signal_sl, data_df["time"][data_df_row_index])
                 print("Cena otvorenia {} {} SL_HIT {}".format(signal_type, signal_price, signal_sl))
                 return vysledok
                 break
@@ -524,12 +524,12 @@ def vyhodnotenie_signalu(data_df, signal_type,signal_price,signal_sl,signal_tp,s
 
 def itteruj():
     vysledky_sorted = pd.DataFrame()
-    writer_vysledky = pd.ExcelWriter("/Users/Cappucinoes/PycharmProjects/Forex-Backtester/vysledky.xlsx")
-    xlsx = xlrd.open_workbook("/Users/Cappucinoes/PycharmProjects/Forex-Backtester/df_backtest_feed.xlsx")
+    writer_vysledky = pd.ExcelWriter(r"C:\Users\Cappucinoe`s Beast\Desktop\Python-Algo\Backtesting\vysledky.xlsx")
+    xlsx = xlrd.open_workbook(r"C:\Users\Cappucinoe`s Beast\Desktop\Python-Algo\Backtesting\df_backtest_feed.xlsx")
     for sheet_name in xlsx.sheet_names():
         vysledok = []
-        signal_df = pd.read_excel("/Users/Cappucinoes/PycharmProjects/Forex-Backtester/pysignals.xlsx", sheet_name)
-        data_df = pd.read_excel("/Users/Cappucinoes/PycharmProjects/Forex-Backtester/df_backtest_feed.xlsx", sheet_name)
+        signal_df = pd.read_excel(r"C:\Users\Cappucinoe`s Beast\Desktop\Python-Algo\Backtesting\signals.xlsx", sheet_name)
+        data_df = pd.read_excel(r"C:\Users\Cappucinoe`s Beast\Desktop\Python-Algo\Backtesting\df_backtest_feed.xlsx", sheet_name)
         signal_generator = signal_df.iterrows()
         for signal_row in signal_generator:
             signal_index = signal_row[0]
@@ -540,17 +540,18 @@ def itteruj():
             signal_identified_index = signal_row[1]["IDENTIFICATOR_CANDLE"]
 
             vysledok.append(vyhodnotenie_signalu(data_df=data_df, signal_type = signal_type, signal_price = signal_price,
-                                 signal_sl = signal_sl, signal_tp = signal_tp,signal_index = signal_index, signal_identified_index = signal_identified_index))
+                                 signal_sl = signal_sl, signal_tp = signal_tp,signal_index = signal_index, signal_identified_index = signal_identified_index,
+                                                 sheet_name=sheet_name))
         ser = pd.Series(vysledok)
         ser.dropna(inplace=True)
         ser.to_excel(writer_vysledky, sheet_name)
         vysledky_sorted = pd.concat([vysledky_sorted, ser], ignore_index= True)
     writer_vysledky.save()
-    vysledky_sorted.to_excel("/Users/Cappucinoes/PycharmProjects/Forex-Backtester/vysledky_sorted.xlsx")
+    vysledky_sorted.to_excel(r"C:\Users\Cappucinoe`s Beast\Desktop\Python-Algo\Backtesting\vysledky_sorted.xlsx")
 
-fire_up(accountID,access_token) # fetches data into file
-vytvor_signal_excel_file() # creates supp files
-itteruj() # does condition checking
+# fire_up(accountID,access_token) # fetches data into file
+# vytvor_signal_excel_file() # creates supp files
+#itteruj() # does condition checking
 
 def plus_minus(riadok):
     for i in riadok.split():
@@ -562,23 +563,27 @@ def extract_price(riadok, index_ceny): # index ceny je index riadku.split napr. 
 
 
 def vysledok_v_pip(riadok):
-    vysledok_v_pip = abs(riadok["order_open_price"] - riadok["order_close_price"])
+    vysledok_v_pip = abs(riadok["Open_price"] - riadok["Closed_price"])
     if riadok["balance_effect"] == "TP_HIT":
         return vysledok_v_pip
     else:
         return -vysledok_v_pip
 
 def spracuj_vysledky():
-    vysledky_df = pd.read_excel("/Users/Cappucinoes/PycharmProjects/Forex-Backtester/vysledky_sorted.xlsx")
+    # columns = ["Date_open", "Order_type", "Size", "Pair","Open_price", "SL", "TP", "Date_closed", "Closed_price"]
+    vysledky_df = pd.read_excel(r"C:\Users\Cappucinoe`s Beast\Desktop\Python-Algo\Backtesting\vysledky_sorted.xlsx")
     vysledky_df.columns = ["data"]
+    vysledky_df["Date_open"] = pd.to_datetime(vysledky_df.data.apply(lambda x: x.split()[0].replace("T"," ")[:-11]))
+    vysledky_df["Order_type"] = vysledky_df.data.apply(lambda x: x.split()[2])
+    vysledky_df["Pair"] = vysledky_df.data.apply(lambda x: x.split()[1])
+    vysledky_df["Open_price"] = vysledky_df.data.apply(extract_price,index_ceny=4) # index ceny = na akej pozicii indexu sa nachadza pozadovana cena
+    vysledky_df["Date_closed"] = pd.to_datetime(vysledky_df.data.apply(lambda x: x.split()[-1].replace("T"," ")[:-11]))
+    vysledky_df["Closed_price"] = vysledky_df.data.apply(extract_price,index_ceny=7)
+    vysledky_df["Closed_price"] = vysledky_df["Closed_price"].apply(lambda x: float(x))
     vysledky_df["balance_effect"] = vysledky_df.data.apply(plus_minus)
-    vysledky_df["order_open_price"] = vysledky_df.data.apply(extract_price,index_ceny=4) # index ceny = na akej pozicii indexu sa nachadza pozadovana cena
-    vysledky_df["order_close_price"] = vysledky_df.data.apply(extract_price,index_ceny=7)
-    #vysledky_df["vysledky_v_pip"] = vysledky_df.apply(vysledok_v_pip, axis=1)
-    vysledky_df["order_close_price"] = vysledky_df["order_close_price"].apply(lambda x: float(x))
-    vysledky_df["order_open_price"] = vysledky_df["order_open_price"].apply(lambda x: float(x))
-    vysledky_df["vysledok_v_pip"] = vysledky_df.apply(vysledok_v_pip, axis= 1)
-    vysledky_df["limit_order_time"] = vysledky_df.data.apply(lambda x: x.split()[0])
+    vysledky_df["Open_price"] = vysledky_df["Open_price"].apply(lambda x: float(x))
+    vysledky_df["Result"] = vysledky_df.apply(vysledok_v_pip, axis= 1)
+
 
     return vysledky_df
 
@@ -593,12 +598,13 @@ print(vysledky_df.groupby(by =["balance_effect"]).count())
 print(vysledky_df.tail())
 #print(vysledky_df[["order_close_price","order_open_price","vysledok_v_pip", "balance_effect"]])
 #print(vysledky_df["vysledok_v_pip"].sum)
-vysledky_df.to_excel("/Users/Cappucinoes/PycharmProjects/Forex-Backtester/vysledky_stats.xlsx")
+vysledky_df.to_excel(r"C:\Users\Cappucinoe`s Beast\Desktop\Python-Algo\Backtesting\vysledky_stats.xlsx")
 
-print(vysledky_df["vysledok_v_pip"].apply(lambda x: abs(x)).mean)
+#print(vysledky_df["vysledok_v_pip"].apply(lambda x: abs(x)).mean)
 #cesty prepisane
 
 #edit
+
 
 
 
