@@ -69,13 +69,13 @@ def vytvor_statistiku(trading_history):
 
     #WIN ratio podla buy/sell typu
     stat = trading_history.groupby(by = ["Order_type", "balance_effect"]).count().Result
-    print("WIN RATIO PRE BUY JE ", (stat["BUY"]["TP_HIT"] / stat["BUY"]["SL_HIT"])*100, " percent")
-    print("WIN RATIO PRE SELL JE ", (stat["SELL"]["TP_HIT"] / stat["SELL"]["SL_HIT"])*100, " percent")
+    print("WIN RATIO PRE BUY JE ", (stat["BUY"]["TP_HIT"] / (stat["BUY"]["SL_HIT"]+stat["BUY"]["TP_HIT"]))*100, " percent")
+    print("WIN RATIO PRE SELL JE ", (stat["SELL"]["TP_HIT"] / (stat["SELL"]["SL_HIT"] + stat["BUY"]["TP_HIT"]))*100, " percent")
 
     #average hold time
     dates_df = trading_history.apply(lambda x: x.Date_closed - x.Date_open , axis = 1)
     avg_hold_time = divmod(dates_df.mean().total_seconds(), 60)
-    print("Average position hold time is {} minutes and {} seconds".format(str(avg_hold_time[0])[:-2], str(avg_hold_time[1])[:2]))
+    print("Average position hold time is {} minutes and {} seconds".format(str(avg_hold_time[0])[:-2], str(avg_hold_time[1])[:2])) #doesnt work properly
 
     #WIN RATIO PODLA DNI + pocet dni potrebnych na obchodovanie
     day_col = trading_history.Date_open.apply(lambda x: x.day)
@@ -86,6 +86,7 @@ def vytvor_statistiku(trading_history):
     cas_win_lose(cas = "day") #vytvori statisticke data pre ziskovost podla jednotlivych dni
 
     print("Win ratio podla obchodnych dni ulozene.")
+    print(trading_history.groupby(["Order_type","balance_effect"]).count().Result)
 
 
 

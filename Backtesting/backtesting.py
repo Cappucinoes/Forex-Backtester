@@ -12,11 +12,13 @@ access_token = "0a504d77a452765e89fef14a396edbb5-926aa0288f617853dc8468faa10fe46
 api = API(access_token) # initialize API
 menove_pary = ["EUR_USD", "NZD_USD","USD_CHF","GBP_USD","AUD_USD","USD_CAD","GBP_CHF"] #list of currencies we wish to use
 
-params = {"count":5000, # sets parameters for query
-                "granularity": "M1"}
-def fire_up(acc_id, access_t):
-    accountID = acc_id # define accID
+
+
+def fire_up(acc_id, access_t,timeframe,SL_magnifier, TP_magnifier): #timeframe like M1, M5, M15, M30
     access_token = access_t # define api_token
+    params = {"count":5000, # sets parameters for query
+              "granularity": timeframe}
+    accountID = acc_id # define accID
 
 
     writer = pd.ExcelWriter(r"C:\Users\Cappucinoe`s Beast\Desktop\Python-Algo\Backtesting\df_backtest_feed.xlsx")
@@ -127,7 +129,7 @@ def fire_up(acc_id, access_t):
         rozdiel_1_predosla_l = []
         rozdiel_2_predosla_l = []
         lows_reversed_float = [float(x) for x in lows[-1::-1]]
-         # musime pretocit na indexovanie flooru, potom nazad
+        # musime pretocit na indexovanie flooru, potom nazad
 
         for cislo_operacie in range(len(lows_reversed_float) - 2):
             cena_low_swingu.append(lows_reversed_float[cislo_operacie])
@@ -393,8 +395,9 @@ def fire_up(acc_id, access_t):
                         for potencial_void in range(5):
                             if df_hotovy.candle_size_pip[valid_range_index + i + potencial_void] > (
                                     range_size * void_magnitude):
-                                signal = "BUY {} SL {} TP {} SC {}".format(df_hotovy.roof_price[valid_range_index], df_hotovy.floor_price[valid_range_index] - 0.00020,
-                                                                     df_hotovy.roof_price[valid_range_index] + (abs(df_hotovy.roof_price[valid_range_index] - (df_hotovy.floor_price[valid_range_index] - 0.00020))) * 2.5,
+                                signal = "BUY {} SL {} TP {} SC {}".format(df_hotovy.roof_price[valid_range_index], df_hotovy.floor_price[valid_range_index] - SL_magnifier,
+                                                                           df_hotovy.roof_price[valid_range_index]
+                                                                           + (abs(df_hotovy.roof_price[valid_range_index] - (df_hotovy.floor_price[valid_range_index] - 0.00020))) * TP_magnifier,
                                                                            valid_range_index+i+potencial_void) #RRR set to 2.5:1
                                 return [valid_range_index, signal]
                             break
@@ -403,8 +406,9 @@ def fire_up(acc_id, access_t):
                         for potencial_void in range(5):
                             if df_hotovy.candle_size_pip[valid_range_index + i + potencial_void] > (
                                     range_size * void_magnitude):
-                                signal = "SELL {} SL {} TP {} SC {}".format(df_hotovy.floor_price[valid_range_index], df_hotovy.roof_price[valid_range_index] + 0.00020,
-                                                                      df_hotovy.floor_price[valid_range_index] - (abs(df_hotovy.floor_price[valid_range_index] - (df_hotovy.roof_price[valid_range_index] + 0.00020)))*2.5,
+                                signal = "SELL {} SL {} TP {} SC {}".format(df_hotovy.floor_price[valid_range_index], df_hotovy.roof_price[valid_range_index] + SL_magnifier,
+                                                                            df_hotovy.floor_price[valid_range_index]
+                                                                            - (abs(df_hotovy.floor_price[valid_range_index] - (df_hotovy.roof_price[valid_range_index] + 0.00020)))*TP_magnifier,
                                                                             valid_range_index + i + potencial_void) #RRR set to 2.5:1
                                 return [valid_range_index, signal]
                             break
@@ -499,8 +503,8 @@ def vyhodnotenie_signalu(data_df, signal_type,signal_price,signal_sl,signal_tp,s
                             return True
 
             elif signal_type == "SELL": #urci kontrolu TP a SL pre sell order
-                check_tp = operator.le(data_df["l"][data_df_row_index], signal_tp)#spread je +0.00015
-                check_sl = operator.ge(data_df["h"][data_df_row_index], signal_sl)#spread je +0.00015
+                check_tp = operator.le(data_df["l"][data_df_row_index]+0.00015, signal_tp)#spread je +0.00015
+                check_sl = operator.ge(data_df["h"][data_df_row_index]+0.00015, signal_sl)#spread je +0.00015
                 def check_open():
                     for index_kontrola_open in range(signal_identified_index+1, data_df_row_index):
                         if data_df["h"][index_kontrola_open] >= signal_price:
@@ -549,9 +553,9 @@ def itteruj():
     writer_vysledky.save()
     vysledky_sorted.to_excel(r"C:\Users\Cappucinoe`s Beast\Desktop\Python-Algo\Backtesting\vysledky_sorted.xlsx")
 
-# fire_up(accountID,access_token) # fetches data into file
-# vytvor_signal_excel_file() # creates supp files
-#itteruj() # does condition checking
+fire_up(accountID,access_token,timeframe="M15",TP_magnifier=3, SL_magnifier=0.00010) # fetches data into file #tp magnifier si parameter for RRR like 2.5 #SL magnifier is +/- pips on SL (at least 0.00020
+vytvor_signal_excel_file() # creates supp files
+itteruj() # does condition checking
 
 def plus_minus(riadok):
     for i in riadok.split():
