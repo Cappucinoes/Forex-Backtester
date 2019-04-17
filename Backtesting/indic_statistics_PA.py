@@ -18,6 +18,27 @@ print(trading_history.head())
 def uloz_df_na_graf(df,file_name):
     df.to_excel(r"C:\Users\Cappucinoe`s Beast\Desktop\Python-Algo\Backtesting\{}.xlsx".format(file_name))
 
+def cas_win_lose(cas):
+    results = trading_history.groupby([cas, "balance_effect"]).count().Result
+    results_df = pd.DataFrame(columns=["WIN_RATIO", "LOOSE_RATIO"])
+    for i in results.index.levels[0]:
+        try:
+            win_percento = results.loc[i].loc["TP_HIT"] / (
+                    results.loc[i].loc["TP_HIT"] + results.loc[i].loc["SL_HIT"])
+            loose_percento = results.loc[i].loc["SL_HIT"] / (
+                    results.loc[i].loc["TP_HIT"] + results.loc[i].loc["SL_HIT"])
+            dictionary = dict(zip(["WIN_RATIO", "LOOSE_RATIO"], [win_percento, loose_percento]))
+            results_df.loc[i] = dictionary
+            # percento_win = results.loc[i].loc["WIN"] / (test_count_grouped.loc[i].loc["WIN"] + test_count_grouped.loc[i].loc["LOOSE"])
+            # percento_lose = test_count_grouped.loc[i].loc["LOOSE"] / (test_count_grouped.loc[i].loc["WIN"] + test_count_grouped.loc[i].loc["LOOSE"])
+            # test_count_grouped.loc[i].loc["WIN"] = percento_win
+            # test_count_grouped.loc[i].loc["LOOSE"] = percento_lose
+        except (IndexError, KeyError):
+            pass
+
+    uloz_df_na_graf(results_df, "WIN_RATIO_BY_{}".format(cas))
+    print("Win ratio podla {} ulozene.".format(cas))
+
 
 
 def vytvor_statistiku(trading_history):
@@ -35,9 +56,9 @@ def vytvor_statistiku(trading_history):
 
     #win ratio by time
     trading_history["hour"] = trading_history.Date_open.apply(lambda x: x.hour)
-    stat = trading_history.groupby(by = ["hour", "balance_effect"]).count().Result
-    uloz_df_na_graf(stat, "neoptimalizovana_casy_stats")
-    print("Vysledne data pre graf na statistiku podla casu ulozene")
+    cas_win_lose(cas="hour") #vytvori statisticke data pre ziskovost podla jednotlivych hodin
+
+
 
     #average win/loss in pips and AVG RRR
     stat = trading_history.groupby("balance_effect").mean().Result
@@ -62,24 +83,8 @@ def vytvor_statistiku(trading_history):
     prvy_den = trading_history.day.iloc[0]
     posledny_den = trading_history.day.iloc[trading_history.shape[0]-1]
     print("Na obchodovanie bolo treba {} dni".format(posledny_den - prvy_den))
-    results_by_day = trading_history.groupby(["day", "balance_effect"]).count().Result
-    results_by_day_df = pd.DataFrame(columns=["WIN_RATIO", "LOOSE_RATIO"])
-    for i in results_by_day.index.levels[0]:
-        try:
-            win_percento = results_by_day.loc[i].loc["TP_HIT"] / (
-                        results_by_day.loc[i].loc["TP_HIT"] + results_by_day.loc[i].loc["SL_HIT"])
-            loose_percento = results_by_day.loc[i].loc["SL_HIT"] / (
-                        results_by_day.loc[i].loc["TP_HIT"] + results_by_day.loc[i].loc["SL_HIT"])
-            dictionary = dict(zip(["WIN_RATIO", "LOOSE_RATIO"], [win_percento, loose_percento]))
-            results_by_day_df.loc[i] = dictionary
-            # percento_win = results_by_day.loc[i].loc["WIN"] / (test_count_grouped.loc[i].loc["WIN"] + test_count_grouped.loc[i].loc["LOOSE"])
-            # percento_lose = test_count_grouped.loc[i].loc["LOOSE"] / (test_count_grouped.loc[i].loc["WIN"] + test_count_grouped.loc[i].loc["LOOSE"])
-            # test_count_grouped.loc[i].loc["WIN"] = percento_win
-            # test_count_grouped.loc[i].loc["LOOSE"] = percento_lose
-        except (IndexError, KeyError):
-            pass
+    cas_win_lose(cas = "day") #vytvori statisticke data pre ziskovost podla jednotlivych dni
 
-    uloz_df_na_graf(results_by_day_df.WIN_RATIO, "WIN_RATIO_BY_DAY")
     print("Win ratio podla obchodnych dni ulozene.")
 
 
