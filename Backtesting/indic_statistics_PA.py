@@ -9,7 +9,7 @@ pd.set_option('display.width', 320)
 pd.set_option("display.max_columns", 20)
 
 
-trading_history = pd.read_excel(r"C:\Users\Cappucinoe`s Beast\Desktop\Python-Algo\Backtesting\vysledky_stats.xlsx")
+trading_history = pd.read_excel(r"C:\Users\Cappucinoe`s Beast\Desktop\Python-Algo\Backtesting\15M_neopt_TP3_SL10_SPREAD\vysledky_stats.xlsx")
 trading_history = trading_history.loc[:,"Date_open":]
 print(trading_history.head())
 # ak dojde k odstraneniu casov alebo parov je potrebne ich zadat pred spustenim funkcie!!!
@@ -78,16 +78,15 @@ def vytvor_statistiku(trading_history):
     print("Average position hold time is {} minutes and {} seconds".format(str(avg_hold_time[0])[:-2], str(avg_hold_time[1])[:2])) #doesnt work properly
 
     #WIN RATIO PODLA DNI + pocet dni potrebnych na obchodovanie
-    day_col = trading_history.Date_open.apply(lambda x: x.day)
-    trading_history["day"] = day_col
-    prvy_den = trading_history.day.iloc[0]
-    posledny_den = trading_history.day.iloc[trading_history.shape[0]-1]
-    print("Na obchodovanie bolo treba {} dni".format(posledny_den - prvy_den))
-    cas_win_lose(cas = "day") #vytvori statisticke data pre ziskovost podla jednotlivych dni
-
-    print("Win ratio podla obchodnych dni ulozene.")
+    day_col = trading_history.Date_open.apply(lambda x: x.date())
+    rozdiel = day_col[day_col.shape[0]-1] - day_col[0]
+    print("Na obchodovanie bolo treba {} dni".format(rozdiel))
     print(trading_history.groupby(["Order_type","balance_effect"]).count().Result)
 
+    #Vysledky chronologicky podla datumu otvorenia pozicie
+    trading_history["Datum"] = trading_history.Date_open.apply(lambda x: x.date())
+    cas_win_lose("Datum")
+    print("Data for date statistics of win ratio saved.")
 
 
 vytvor_statistiku(trading_history)
